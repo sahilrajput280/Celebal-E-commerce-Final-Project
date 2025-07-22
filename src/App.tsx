@@ -5,6 +5,7 @@ import Login from "./pages/login"; // <-- Import Login
 import About from "./components/About";
 import Cart from "./pages/Cart";
 import Services from "./components/services";
+import Chatbot from "./components/ChatBot";
 import { Routes, Route } from "react-router-dom";
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
       <Route path="/about" element={<About />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/services" element={<Services />} />
+      <Route path="/chatbot" element={<Chatbot />} />
     </Routes>
   );
 }

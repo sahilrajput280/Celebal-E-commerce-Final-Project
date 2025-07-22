@@ -5,6 +5,7 @@ import Services from "../components/services";
 import Destinations from "../components/Destinations";
 import BookingForm from "../components/bookings";
 import Activities from "../components/Activities";
+import ChatBot from "../components/ChatBot"; // adjust the path if needed
 
 const planeImages = [
   "/images/5.jpg",
@@ -24,6 +25,15 @@ const sections = [
 
 const LandingPage: React.FC = () => {
   const [current, setCurrent] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("user"));
+
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<{ id: string; label: string }[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  const [showChatBot, setShowChatBot] = useState(false);
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -31,10 +41,6 @@ const LandingPage: React.FC = () => {
     }, 2000);
     return () => clearInterval(interval);
   }, []);
-
-  const goToSlide = (idx: number) => setCurrent(idx);
-
-  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     const updateCartCount = () => {
@@ -46,18 +52,11 @@ const LandingPage: React.FC = () => {
     return () => window.removeEventListener("storage", updateCartCount);
   }, []);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("user"));
-
   useEffect(() => {
     const onStorage = () => setIsLoggedIn(!!localStorage.getItem("user"));
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
-
-  // Search state
-  const [search, setSearch] = useState("");
-  const [results, setResults] = useState<{ id: string; label: string }[]>([]);
-  const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
     if (search.trim() === "") {
@@ -73,7 +72,36 @@ const LandingPage: React.FC = () => {
   }, [search]);
 
   return (
-    <div className="text-center font-sans min-h-screen bg-[#929f8c]">
+    <div className="text-center font-sans min-h-screen bg-[#929f8c] relative">
+      {/* Sidebar */}
+      {isSidebarOpen && (
+        <div className="fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 flex flex-col p-6 transition-transform duration-300">
+          <h2 className="text-lg font-semibold mb-4">Menu</h2>
+          <Link to="/profile" className="mb-2 text-black hover:underline text-left">Profile</Link>
+          <Link to="/cart" className="mb-2 text-black hover:underline text-left">
+            Manage Cart ({cartCount})
+          </Link>
+          <Link to="/support" className="mb-2 text-black hover:underline text-left">Customer Support</Link>
+          <Link to="/feedback" className="mb-4 text-black hover:underline text-left">Feedback</Link>
+          <button
+            onClick={() => {  
+              localStorage.removeItem("user");
+              setIsLoggedIn(false);
+              setIsSidebarOpen(false);
+            }}
+            className="px-4 py-2 border border-black hover:bg-black hover:text-white transition rounded"
+          >
+            Logout
+          </button>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="mt-4 text-sm text-gray-500 hover:underline"
+          >
+            Close
+          </button>
+        </div>
+      )}
+
       {/* Transparent Navbar */}
       <header className="sticky top-0 left-0 w-full flex items-center justify-between px-8 py-4 bg-white/10 backdrop-blur-md shadow-none z-40">
         <div className="flex items-center gap-3">
@@ -87,7 +115,8 @@ const LandingPage: React.FC = () => {
             <span className="font-normal text-gray-900">-Chalo</span>
           </span>
         </div>
-      {/* Search Bar */}
+
+        {/* Search Bar */}
         <div className="relative ml-4 hidden md:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -135,61 +164,26 @@ const LandingPage: React.FC = () => {
         </div>
 
         <nav className="flex items-center gap-1">
-          <a href="#home" className="text-gray-800 hover:text-gray-600 font-medium px-3 py-1 rounded hover:bg-blue-100 transition-colors duration-200">
-            HOME
-          </a>
-          <a href="#about" className="text-gray-800 hover:text-gray-600 font-medium px-3 py-1 rounded hover:bg-blue-100 transition-colors duration-200">
-            ABOUT
-          </a>
-          <a href="#services" className="text-gray-800 hover:text-gray-600 font-medium px-3 py-1 rounded hover:bg-blue-100 transition-colors duration-200">
-            SERVICES
-          </a>
-          <a href="#Activities" className="text-gray-800 hover:text-gray-600 font-medium px-3 py-1 rounded hover:bg-blue-100 transition-colors duration-200">
-            ACTIVITIES
-          </a>
-          {/* Cart Button - show only if logged in */}
-          {isLoggedIn && (
-            <Link
-              to="/Cart"
-              className="relative px-4 py-2 border border-black rounded flex items-center hover:bg-black hover:text-white transition"
-            >
-              <span className="mr-2">Cart</span>
-              <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M3 3h2l.4 2M7 13h10l4-8H5.4" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
-              </svg>
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          )}
-          {!isLoggedIn && (
-            <>
-              <Link
-                to="/login"
-                className="px-4 py-2 border border-black hover:bg-black hover:text-white transition rounded">
-                LOG-IN
-              </Link>
-              <Link
-                to="/register"
-                className="px-4 py-2 border border-black hover:bg-black hover:text-white transition rounded">
-                REGISTER
-              </Link>
-            </>
-          )}
-          {isLoggedIn && (
+          <a href="#home" className="text-gray-800 hover:text-gray-600 font-medium px-3 py-1 rounded hover:bg-blue-100 transition-colors duration-200">HOME</a>
+          <a href="#about" className="text-gray-800 hover:text-gray-600 font-medium px-3 py-1 rounded hover:bg-blue-100 transition-colors duration-200">ABOUT</a>
+          <a href="#services" className="text-gray-800 hover:text-gray-600 font-medium px-3 py-1 rounded hover:bg-blue-100 transition-colors duration-200">SERVICES</a>
+          <a href="#Activities" className="text-gray-800 hover:text-gray-600 font-medium px-3 py-1 rounded hover:bg-blue-100 transition-colors duration-200">ACTIVITIES</a>
+
+          {isLoggedIn ? (
             <button
-              onClick={() => {
-                localStorage.removeItem("user");
-                setIsLoggedIn(false);
-              }}
-              className="px-4 py-2 border border-black hover:bg-black hover:text-white transition rounded ml-2"
+              onClick={() => setIsSidebarOpen(true)}
+              className="ml-4 p-2 hover:bg-gray-200 rounded transition"
             >
-              LOGOUT
+              {/* Hamburger Icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
             </button>
+          ) : (
+            <>
+              <Link to="/login" className="px-4 py-2 border border-black hover:bg-black hover:text-white transition rounded">LOG-IN</Link>
+              <Link to="/register" className="px-4 py-2 border border-black hover:bg-black hover:text-white transition rounded">REGISTER</Link>
+            </>
           )}
         </nav>
       </header>
@@ -206,74 +200,73 @@ const LandingPage: React.FC = () => {
         }}
       >
         <hr className="w-1/2 border-t-2 border-white mb-6" />
-        <h1 className="text-white md:text-6xl font-bold uppercase tracking-widest mb-2">
-          LOSE | YOURSELF
-        </h1>
-        <h1 className="text-white md:text-6xl font-bold uppercase tracking-widest">
-          DISCOVER | YOURSELF
-        </h1>
+        <h1 className="text-white md:text-6xl font-bold uppercase tracking-widest mb-2">LOSE | YOURSELF</h1>
+        <h1 className="text-white md:text-6xl font-bold uppercase tracking-widest">DISCOVER | YOURSELF</h1>
         <hr className="w-1/2 border-t-2 border-white mt-6" />
-        {/* Carousel Dots */}
         <div className="flex justify-center mt-8 space-x-2">
           {planeImages.map((_, idx) => (
             <button
               key={idx}
               className={`w-3 h-1 rounded-full ${current === idx ? "bg-white" : "bg-gray-500"} focus:outline-none`}
-              onClick={() => goToSlide(idx)}
+              onClick={() => setCurrent(idx)}
               aria-label={`Go to slide ${idx + 1}`}
             />
           ))}
         </div>
       </section>
 
-      {/* Activities */}
+      {/* Activities Icons */}
       <section className="flex justify-center gap-12 bg-[#cacfca] py-12">
         <div className="flex flex-col items-center">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/201/201623.png"
-            alt="Car Booking"
-            className="w-16 h-16 mb-2"
-          />
+          <img src="https://cdn-icons-png.flaticon.com/512/201/201623.png" alt="Car Booking" className="w-16 h-16 mb-2" />
           <span className="text-gray-700 text-sm">Booking</span>
         </div>
         <div className="flex flex-col items-center">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/616/616494.png"
-            alt="Hot Air Balloon"
-            className="w-16 h-16 mb-2"
-          />
+          <img src="https://cdn-icons-png.flaticon.com/512/616/616494.png" alt="Hot Air Balloon" className="w-16 h-16 mb-2" />
           <span className="text-gray-700 text-sm">Accessible</span>
         </div>
         <div className="flex flex-col items-center">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/854/854866.png"
-            alt="Travelling"
-            className="w-16 h-16 mb-2"
-          />
+          <img src="https://cdn-icons-png.flaticon.com/512/854/854866.png" alt="Travelling" className="w-16 h-16 mb-2" />
           <span className="text-gray-700 text-sm">Travelling</span>
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about">
-        <About />
-      </section>
+      <section id="about"><About /></section>
+      <section id="services"><Services /></section>
+      {/* Floating Chat Button */}
+<button
+  onClick={() => setShowChatBot((prev) => !prev)}
+  className="fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-4 shadow-lg z-50"
+>
+  💬
+</button>
 
-      <section id="services">
-        <Services />
-      </section>
+{/* Floating ChatBot Container */}
+{showChatBot && (
+  <div className="fixed bottom-20 right-6 w-80 h-[28rem] bg-white rounded-2xl shadow-lg z-50 overflow-hidden flex flex-col">
+    {/* Header */}
+    <div className="bg-[#cacfca] text-gray-800 p-3 flex justify-between items-center">
+      <span className="font-bold">CarSe-Chalo ChatBot</span>
+      <button
+        onClick={() => setShowChatBot(false)}
+        className="text-gray-700 hover:text-black text-lg"
+        aria-label="Close Chatbot"
+      >
+        ✖
+      </button>
+    </div>
 
-      <section id="destinations">
-        <Destinations />
-      </section>
-      
-      <section id="Activities">
-        <Activities />
-      </section>
+    {/* ChatBot Content */}
+    <div className="flex-1 overflow-y-auto">
+      <ChatBot />
+    </div>
+  </div>
+)}
 
-      <section id="bookings">
-        <BookingForm />
-      </section>
+
+      <section id="destinations"><Destinations /></section>
+      <section id="Activities"><Activities /></section>
+      <section id="bookings"><BookingForm /></section>
     </div>
   );
 };

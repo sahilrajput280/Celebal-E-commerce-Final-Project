@@ -78,7 +78,14 @@ const Services: React.FC = () => {
                 <ul className="space-y-2">
                   <li>
                     <span className="font-bold">Don't see it?</span>{" "}
-                    <a href="#" className="text-blue-600 font-semibold hover:underline">Let's chat</a>
+                    <button
+                      onClick={() => {
+                        window.dispatchEvent(new Event("openChatBot"));
+                      }}
+                      className="text-blue-600 font-semibold hover:underline"
+                    >
+                      Let’s chat
+                    </button>
                   </li>
                 </ul>
               </div>

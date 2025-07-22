@@ -161,7 +161,7 @@ const Activities: React.FC = () => {
         ))}
       </div>
       {/* Example: Cart count display */}
-      <div className="fixed bottom-6 right-6 bg-white shadow-lg rounded-full px-6 py-3 font-bold text-indigo-700">
+      <div className="hidden">
         Cart: {cart.length}
       </div>
     </section>
